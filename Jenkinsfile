@@ -1,68 +1,42 @@
-def project = 'abeerr-prj-002'
-def appName = 'java-springboot'
-def feSvcName = "springboot"
-def imageTag = "gcr.io/${project}/${appName}:${env.BRANCH_NAME}.${env.BUILD_NUMBER}"
-
-pipeline {
-  agent {
-    kubernetes {
-      defaultContainer 'jnlp'
-      yaml """
-apiVersion: v1
-kind: Pod
-metadata:
-labels:
-  component: ci
-spec:
-  # Use service account that can deploy to all namespaces
-  serviceAccountName: cd-jenkins
-  containers:
-  - name: gcloud
-    image: gcr.io/cloud-builders/gcloud
-    command:
-    - cat
-    tty: true
-  - name: kubectl
-    image: gcr.io/cloud-builders/kubectl
-    command:
-    - cat
-    tty: true
-"""
-}
-  }
-  stages {
-    stage('Build and push image with Container Builder') {
-      steps {
-        container('gcloud') {
-          sh "PYTHONUNBUFFERED=1 gcloud container builds submit -t ${imageTag} ."
+node {
+    docker.withRegistry('https://hub.docker.com/', 'docker-hub-credentials') {
+    	def mvnHome
+    	
+    	stage('checkout'){
+        
+        mvnHome = tool 'M3'
+        git url: 'https://github.com/premroxx/gs-spring-boot.git'
+    
+        sh "git rev-parse HEAD > .git/commit-id"
+        def commit_id = readFile('.git/commit-id').trim()
+        println commit_id
         }
-      }
+    
+    dir('${artifactId}'){
+        stage('build'){
+	        sh "'${mvnHome}/bin/mvn' -Dmaven.test.failure.ignore clean install"
+	        sh ("gcloud container builds submit -t ${imageTag} .")
+    	}
+    	
+/*     	stage('create docker image'){
+		        sh 'docker login --username <user> --password <user>'
+		        sh ("docker build -t address-rest-api .")
+		        sh ("docker tag  address-rest-api <repo>/test:address-rest-api")
+    	}
+    	
+    	stage('push docker image'){
+			sh ("docker push prakashg84/test:${artifactId}")
+    	}
+    	
+    	stage('create deployment'){
+    	    sh 'kubectl delete deployments ${artifactId}api || true' 
+	    sh 'kubectl create -f deployment.yaml --validate=false'
+    	}
+    	
+    	stage('create service'){
+	    sh 'kubectl delete services ${artifactId}apiservice || true'
+	    sh 'kubectl create -f services.yaml --validate=false'
+    	} */
     }
-    /* stage('Deploy Canary') {
-      // Canary branch
-      when { branch 'canary' }
-      steps {
-        container('kubectl') {
-          // Change deployed image in canary to the one we just built
-          sh("sed -i.bak 's#gcr.io/cloud-solutions-images/gceme:1.0.0#${imageTag}#' ./k8s/canary/*.yaml")
-          sh("kubectl --namespace=production apply -f k8s/services/")
-          sh("kubectl --namespace=production apply -f k8s/canary/")
-          sh("echo http://`kubectl --namespace=production get service/${feSvcName} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'` > ${feSvcName}")
-        } 
-      }
     }
-    stage('Deploy Production') {
-      // Production branch
-      when { branch 'master' }
-      steps{
-        container('kubectl') {
-        // Change deployed image in canary to the one we just built
-          sh("sed -i.bak 's#gcr.io/cloud-solutions-images/gceme:1.0.0#${imageTag}#' ./k8s/production/*.yaml")
-          sh("kubectl --namespace=production apply -f k8s/services/")
-          sh("kubectl --namespace=production apply -f k8s/production/")
-          sh("echo http://`kubectl --namespace=production get service/${feSvcName} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'` > ${feSvcName}")
-        }
-      }
-    } */
-  }
 }
