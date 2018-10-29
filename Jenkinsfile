@@ -1,5 +1,4 @@
 node {
-    docker.withRegistry('https://hub.docker.com/', 'docker-hub-credentials') {
     	def mvnHome
     	
     	stage('checkout'){
@@ -37,6 +36,5 @@ node {
 	    sh 'kubectl delete services ${artifactId}apiservice || true'
 	    sh 'kubectl create -f services.yaml --validate=false'
     	} */
-    }
     }
 }
