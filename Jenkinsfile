@@ -1,22 +1,12 @@
 node {
-    	def mvnHome
-    	
-    	stage('checkout'){
-        
-        mvnHome = tool 'M3'
-        git url: 'https://github.com/premroxx/gs-spring-boot.git'
-    
-        sh "git rev-parse HEAD > .git/commit-id"
-        def commit_id = readFile('.git/commit-id').trim()
-        println commit_id
-        }
-    
+    def project = 'premkuma-bigbank-jenkins'
+    def appName = 'java-springboot'
+    def feSvcName = "springboot"
+    def imageTag = "gcr.io/${project}/${appName}:${env.BRANCH_NAME}.${env.BUILD_NUMBER}"
     dir('${artifactId}'){
         stage('build'){
-	        sh "'${mvnHome}/bin/mvn' -Dmaven.test.failure.ignore clean install"
 	        sh ("gcloud container builds submit -t ${imageTag} .")
     	}
-    	
 /*     	stage('create docker image'){
 		        sh 'docker login --username <user> --password <user>'
 		        sh ("docker build -t address-rest-api .")
