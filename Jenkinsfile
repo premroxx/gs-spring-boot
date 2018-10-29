@@ -17,11 +17,6 @@ spec:
   # Use service account that can deploy to all namespaces
   serviceAccountName: premkuma-bigbank-jenkins
   containers:
-  - name: maven
-    image: maven:alpine
-    command:
-    - cat
-    tty: true
   - name: gcloud
     image: gcr.io/cloud-builders/gcloud
     command:
