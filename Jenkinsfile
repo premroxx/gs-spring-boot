@@ -1,4 +1,4 @@
-def project = 'premkuma-bigbank-jenkins'
+def project = 'abeerr-prj-002'
 def appName = 'java-springboot'
 def feSvcName = "springboot"
 def imageTag = "gcr.io/${project}/${appName}:${env.BRANCH_NAME}.${env.BUILD_NUMBER}"
@@ -15,7 +15,7 @@ labels:
   component: ci
 spec:
   # Use service account that can deploy to all namespaces
-  serviceAccountName: premkuma-bigbank-jenkins
+  serviceAccountName: cd-jenkins
   containers:
   - name: gcloud
     image: gcr.io/cloud-builders/gcloud
