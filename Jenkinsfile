@@ -1,5 +1,5 @@
 node {
-    def project = 'premkuma-bigbank-jenkins'
+    def project = 'numeric-scope-211914'
     def appName = 'java-springboot'
     def feSvcName = "springboot"
     def imageTag = "gcr.io/${project}/${appName}:${env.BRANCH_NAME}.${env.BUILD_NUMBER}"
